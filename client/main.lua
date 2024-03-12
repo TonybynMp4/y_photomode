@@ -1,6 +1,9 @@
+local SendNUIMessage = SendNUIMessage
+
 local FOV_MAX = 79.5
 local FOV_MIN = 7.6
 local DEFAULT_FOV = (FOV_MAX + FOV_MIN) * 0.5
+local MAX_DISTANCE = 25.0
 
 --- @type number
 local fov = DEFAULT_FOV
@@ -12,16 +15,16 @@ local heading = 0.0
 local roll = 0.0
 --- @type vector3 | nil
 local camCoords = nil
+local originCoords = nil
 
 local dofStrength = 0.0
 local dof = 0.0
 local dofEnd = 0.0
 local disabledControls = false
-local camSpeed = 1.0
+local showControls = false
 
 local cam
 local inCam = false
-local cameraProp
 
 local function helpText()
     SetTextComponentFormat("STRING")
@@ -39,7 +42,7 @@ local function resetVariables()
     dof = 0.0
     dofEnd = 0.0
     disabledControls = false
-    camSpeed = 1.0
+    showControls = false
 end
 
 local function resetCamera()
@@ -60,64 +63,104 @@ end
 
 local function handleMouseControls()
     local multiplier = fov / 50
-    heading -= (GetControlNormal(2, 1) * (5 * multiplier))
-    pitch -= (GetControlNormal(2, 2) * (5 * multiplier))
+    heading -= (GetDisabledControlNormal(2, 1) * (5 * multiplier))
+    pitch -= (GetDisabledControlNormal(2, 2) * (5 * multiplier))
     ---@diagnostic disable-next-line: undefined-field
     pitch = math.clamp(pitch, -90.0, 90.0)
     SetCamRot(cam, pitch, roll, heading, 2)
 end
 
 local function handleKeyboardControls()
-    local speed = multiplier
-    local displacementVector = vector3(0, 0, 0)
-    if IsControlPressed(0, 21) then
+    local speed = 0.1
+    local moveForward = 0
+    local moveRight = 0
+    local moveUp = 0
+
+    if IsDisabledControlPressed(0, 21) then
         speed = speed * 2
     end
 
-    if IsControlPressed(0, 210) then
+    if IsDisabledControlPressed(0, 210) then
         speed = speed / 2
     end
 
     -- Down
-    if IsControlPressed(0, 44) then
-        displacementVector += vector3(0, 0, -speed)
+    if IsDisabledControlPressed(0, 44) then
+        moveUp += -speed
+    end
+
+    -- Up
+    if IsDisabledControlPressed(0, 38) then
+        moveUp += speed
     end
 
     -- Forward
-    if IsControlPressed(0, 32) then
-        displacementVector += vector3(0, 0, speed)
+    if IsDisabledControlPressed(0, 32) then
+        moveForward += speed
     end
 
     -- Backward
-    if IsControlPressed(0, 33) then
-        displacementVector += vector3(-speed, 0, 0)
+    if IsDisabledControlPressed(0, 33) then
+        moveForward += -speed
     end
 
     -- Left
-    if IsControlPressed(0, 34) then
-        displacementVector += vector3(0, -speed, 0)
+    if IsDisabledControlPressed(0, 34) then
+        moveRight += -speed
     end
 
     -- Right
-    if IsControlPressed(0, 35) then
-        displacementVector += vector3(0, speed, 0)
+    if IsDisabledControlPressed(0, 35) then
+        moveRight += speed
     end
 
     if camCoords == nil then
         camCoords = GetCamCoord(cam)
     end
 
-    camCoords += displacementVector
+    local rightVector, forwardVector, upVector, position = GetCamMatrix(cam)
+    position += forwardVector * moveForward + rightVector * moveRight + upVector * moveUp
+
+    local distance = #(originCoords - position)
+    if distance > MAX_DISTANCE then
+        position = originCoords + (position - originCoords) / distance * MAX_DISTANCE
+    end
+
+    camCoords = position
+
     SetCamCoord(cam, camCoords.x, camCoords.y, camCoords.z)
 end
 
+local function disableKeyboard()
+    DisableAllControlActions(0)
+end
+
+local function disableControls()
+    disabledControls = not disabledControls
+    Wait(100)
+    SetNuiFocus(disabledControls, disabledControls)
+end
+
+RegisterNUICallback('onDisableControls', function(data, cb)
+    disableControls()
+    cb({})
+end)
+
 local function toggleUI()
+    showControls = not showControls
     SendNUIMessage({
         message = 'show',
-        show = true
+        show = showControls
     })
-    disabledControls = not disabledControls
+    if not showControls then
+        SetNuiFocus(false, false)
+    end
 end
+
+RegisterNUICallback('onToggleUI', function(data, cb)
+    toggleUI()
+    cb({})
+end)
 
 local function openCamera()
     SetNuiFocus(false, false)
@@ -127,24 +170,23 @@ local function openCamera()
     SetTimecycleModifier("default")
 
     heading = GetEntityHeading(cache.ped)
+    originCoords = GetEntityCoords(cache.ped)
+    camCoords = GetGameplayCamCoord()
 
     cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
-    AttachCamToEntity(cam, cameraProp, 0.075, -0.30, 0, true)
-    SetCamRot(cam, 0.0, 0.0, GetEntityHeading(cameraProp) / 360, 2)
+    SetCamCoord(cam, camCoords.x, camCoords.y, camCoords.z)
+    SetCamRot(cam, 0.0, 0.0, heading, 2)
     SetCamFov(cam, fov)
     RenderScriptCams(true, false, 0, true, false)
 
-    SendNUIMessage({
-        message = 'show',
-        show = true
-    })
-    SetNuiFocus(true, true)
+    toggleUI()
 
     -- wtf does that do? needs testing
-    SetCamUseShallowDofMode(cam, true)
+    SetCamUseShallowDofMode(cam, false)
 
     CreateThread(function()
         while inCam do
+            disableKeyboard()
             helpText()
             if not disabledControls then
                 handleMouseControls()
@@ -153,10 +195,12 @@ local function openCamera()
 
             SetUseHiDof()
 
-            if IsControlJustPressed(1, 202) then
+            if IsDisabledControlJustPressed(1, 202) then
                 inCam = false
                 resetCamera()
-            elseif IsControlJustPressed(1, 74) then
+            elseif showControls and IsDisabledControlJustPressed(1, 25) then
+                disableControls()
+            elseif IsDisabledControlJustPressed(1, 74) then
                 toggleUI()
             end
             Wait(0)
@@ -167,53 +211,48 @@ end
 lib.addKeybind({
     name = 'photomode',
     description = 'Open the photo mode',
-    defaultKey = 'F7',
+    defaultKey = 'F5',
     onPressed = function()
-        if not inCam then
-            openCamera()
-        else
+        if inCam then
             resetCamera()
+            return
         end
+
+        openCamera()
     end
 })
 
-RegisterNetEvent('qbx_camera:client:openPhoto', function(source, data)
-    SendNUIMessage({
-        message = 'photo',
-        toggle = true,
-        source = source,
-        title = data.title,
-        subText = data.description
-    })
-    SetNuiFocus(true, true)
+RegisterNUICallback('onClose', function (body, cb)
+    resetCamera()
+    cb({})
 end)
 
 RegisterNUICallback('onFovChange', function(data, cb)
-    fov = data.fov
+    fov = tonumber(data.fov)
     SetCamFov(cam, fov)
     cb({})
 end)
 
 RegisterNUICallback('onRollChange', function(data, cb)
-    roll = data.roll
-    SetCamRot(cam, pitch, roll/100, heading, 2)
+    roll = tonumber(data.roll)
+    SetCamRot(cam, pitch, roll, heading, 2)
     cb({})
 end)
 
 RegisterNUICallback('onDofChange', function(data, cb)
-    dof = data.dof
+    dof = tonumber(data.dof)
     SetCamNearDof(cam, dof)
     cb({})
 end)
 
 RegisterNUICallback('onDofEndChange', function(data, cb)
-    dofEnd = data.dofEnd
+    dofEnd = tonumber(data.dofEnd)
     SetCamFarDof(cam, dofEnd)
     cb({})
 end)
 
 RegisterNUICallback('onDofStrengthChange', function(data, cb)
-    dofStrength = data.dofStrength
+    dofStrength = tonumber(data.dofStrength)
     SetCamDofStrength(cam, dofStrength)
     cb({})
 end)

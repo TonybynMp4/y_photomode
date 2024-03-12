@@ -24,4 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
             valueElement.innerText = e.target.value
         });
     }
+
+    document.addEventListener('keydown', function (e) {
+        e.preventDefault();
+        if (e.key === 'Escape' || e.key === 'Backspace') {
+            fetch(`https://${GetParentResourceName()}/onClose`, {
+                method: 'POST',
+            });
+        } else if (e.key === 'h') {
+            fetch(`https://${GetParentResourceName()}/onToggleUI`, {
+                method: 'POST',
+            });
+        }
+    });
+
+    document.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+        fetch(`https://${GetParentResourceName()}/onDisableControls`, {
+            method: 'POST',
+        });
+    });
 });
