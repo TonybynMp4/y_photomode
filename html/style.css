@@ -15,6 +15,7 @@ body {
 }
 
 #controls-container {
+    display: none;
     position: absolute;
     bottom: 1em;
     right: 1em;
