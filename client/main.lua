@@ -10,7 +10,7 @@ local pitch = 0.0
 local heading = 0.0
 --- @type number
 local roll = 0.0
---- @type vector3
+--- @type vector3 | nil
 local camCoords = nil
 
 local dofStrength = 0.0
@@ -51,7 +51,7 @@ local function resetCamera()
     inCam = false
     DestroyCam(cam, false)
     cam = nil
-    RenderScriptCams(false, false, 0, true, false)
+    RenderScriptCams(false, true, 0, true, false)
     DisplayHud(true)
     DisplayRadar(true)
     ClearTimecycleModifier()
@@ -62,6 +62,7 @@ local function handleMouseControls()
     local multiplier = fov / 50
     heading -= (GetControlNormal(2, 1) * (5 * multiplier))
     pitch -= (GetControlNormal(2, 2) * (5 * multiplier))
+    ---@diagnostic disable-next-line: undefined-field
     pitch = math.clamp(pitch, -90.0, 90.0)
     SetCamRot(cam, pitch, roll, heading, 2)
 end
@@ -139,6 +140,9 @@ local function openCamera()
     })
     SetNuiFocus(true, true)
 
+    -- wtf does that do? needs testing
+    SetCamUseShallowDofMode(cam, true)
+
     CreateThread(function()
         while inCam do
             helpText()
@@ -192,21 +196,24 @@ end)
 
 RegisterNUICallback('onRollChange', function(data, cb)
     roll = data.roll
-    SetCamRot(cam, pitch, roll, heading, 2)
+    SetCamRot(cam, pitch, roll/100, heading, 2)
     cb({})
 end)
 
 RegisterNUICallback('onDofChange', function(data, cb)
     dof = data.dof
+    SetCamNearDof(cam, dof)
     cb({})
 end)
 
 RegisterNUICallback('onDofEndChange', function(data, cb)
     dofEnd = data.dofEnd
+    SetCamFarDof(cam, dofEnd)
     cb({})
 end)
 
 RegisterNUICallback('onDofStrengthChange', function(data, cb)
     dofStrength = data.dofStrength
+    SetCamDofStrength(cam, dofStrength)
     cb({})
 end)
