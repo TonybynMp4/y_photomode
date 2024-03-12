@@ -1,0 +1,67 @@
+@font-face {
+	font-family: 'Oxygen';
+	src: url("Oxygen-Regular.ttf");
+}
+
+@font-face {
+	font-family: 'Oxygen-Bold';
+	src: url(Oxygen-Bold.ttf);
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	background-color: none;
+}
+
+#controls-container {
+    position: absolute;
+    bottom: 1em;
+    right: 1em;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 2em;
+    border-radius: 2em;
+    font-family: 'Oxygen';
+    font-size: 1em;
+    font-weight: bold;
+}
+
+#controls-container div {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.value {
+    width: 3em!important;
+    margin-left: 1em;
+}
+
+#controls-container div label {
+    margin-right: auto;
+    margin-block: 0.5em;
+}
+
+.slider {
+    width: 10vw;
+    height: 0.5em;
+    accent-color: rgba(241, 229, 66, 0.651);
+    margin-left: 1em;
+}
+
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 0.75em; /* Set a specific slider handle width */
+  height: 0.75em; /* Slider handle height */
+  cursor: pointer; /* Cursor on hover */
+}
