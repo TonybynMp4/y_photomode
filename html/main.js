@@ -3,12 +3,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.data.message == 'show') {
             document.getElementById('controls-container').style.display = event.data.show ? 'flex' : 'none';
         }
+
+        setLocales();
     });
 
     const sliders = [
         'fov',
         'roll',
-        'dof',
+        'dofStart',
         'dofEnd',
         'dofStrength'
     ]
@@ -45,3 +47,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+function setLocales() {
+    fetch(`https://${GetParentResourceName()}/getLocales`, {
+        method: 'POST',
+    }).then((locales) => locales.json()).then((locales) => {
+        for (const locale in locales) {
+            const element = document.getElementById(`label_${locale}`);
+            if (element) {
+                element.innerText = locales[locale];
+            }
+        }
+    });
+}

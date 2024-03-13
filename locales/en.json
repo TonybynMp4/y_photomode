@@ -1,19 +1,23 @@
 {
-    "help": {
-        "exit": "Exit Camera Mode",
-        "take": "Take Picture"
+    "scaleform": {
+        "mouse": "Toggle mouse",
+        "ui": "Show/Hide UI",
+        "quit": "Quit",
+        "slower": "Slower",
+        "faster": "Faster",
+        "up": "Up",
+        "down": "Down",
+        "forward": "Forward",
+        "backward": "Backward",
+        "left": "Left",
+        "right": "Right"
     },
-    "input": {
-        "title": "Edit Photo",
-        "photoTitle": "Title",
-        "description": "Description"
+    "ui": {
+        "fov": "Field of View",
+        "roll": "Roll",
+        "dofStart": "Depth of Field Start",
+        "dofEnd": "Depth of Field End",
+        "dofStrength": "Depth of Field Strength"
     },
-    "error": {
-        "takePicture": "You did not take a picture",
-        "edit": "Photo edited"
-    },
-    "success": {
-        "edit": "Failed to edit photo",
-        "copied": "URL copied to clipboard"
-    }
+    "open": "Open the photo mode"
 }

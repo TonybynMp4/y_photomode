@@ -31,17 +31,17 @@ local function inputScaleform(scaleform)
     PopScaleformMovieFunctionVoid()
 
     local scaleformButtons = {
-        {'~INPUT_AIM~', locale('scaleform.mouse')},
-        {'~INPUT_VEH_HEADLIGHT~', locale('scaleform.ui')},
-        {'~INPUT_FRONTEND_CANCEL~', locale('scaleform.quit')},
-        {'~INPUT_FRONTEND_RS~', locale('scaleform.slower')},
-        {'~INPUT_SPRINT~', locale('scaleform.faster')},
-        {'~INPUT_PICKUP~', locale('scaleform.up')},
-        {'~INPUT_COVER~', locale('scaleform.down')},
-        {'~INPUT_MOVE_UP_ONLY~', locale('scaleform.forward')},
-        {'~INPUT_MOVE_DOWN_ONLY~', locale('scaleform.backward')},
-        {'~INPUT_MOVE_LEFT_ONLY~', locale('scaleform.left')},
-        {'~INPUT_MOVE_RIGHT_ONLY~', locale('scaleform.right')}
+        { '~INPUT_AIM~',             locale('scaleform.mouse') },
+        { '~INPUT_VEH_HEADLIGHT~',   locale('scaleform.ui') },
+        { '~INPUT_FRONTEND_CANCEL~', locale('scaleform.quit') },
+        { '~INPUT_FRONTEND_RS~',     locale('scaleform.slower') },
+        { '~INPUT_SPRINT~',          locale('scaleform.faster') },
+        { '~INPUT_PICKUP~',          locale('scaleform.up') },
+        { '~INPUT_COVER~',           locale('scaleform.down') },
+        { '~INPUT_MOVE_UP_ONLY~',    locale('scaleform.forward') },
+        { '~INPUT_MOVE_DOWN_ONLY~',  locale('scaleform.backward') },
+        { '~INPUT_MOVE_LEFT_ONLY~',  locale('scaleform.left') },
+        { '~INPUT_MOVE_RIGHT_ONLY~', locale('scaleform.right') }
     }
 
     for i = 1, #scaleformButtons, 1 do
@@ -240,7 +240,7 @@ end
 
 lib.addKeybind({
     name = 'photomode',
-    description = 'Open the photo mode',
+    description = locale('open'),
     defaultKey = 'F5',
     onPressed = function()
         if inCam then
@@ -252,7 +252,7 @@ lib.addKeybind({
     end
 })
 
-RegisterNUICallback('onClose', function (body, cb)
+RegisterNUICallback('onClose', function(_, cb)
     resetCamera()
     cb({})
 end)
@@ -270,7 +270,7 @@ RegisterNUICallback('onRollChange', function(data, cb)
 end)
 
 RegisterNUICallback('onDofChange', function(data, cb)
-    dof = tonumber(data.dof)
+    dof = tonumber(data.dofStart)
     SetCamNearDof(cam, dof)
     cb({})
 end)
@@ -283,6 +283,16 @@ end)
 
 RegisterNUICallback('onDofStrengthChange', function(data, cb)
     dofStrength = tonumber(data.dofStrength)
-    SetCamDofStrength(cam, dofStrength/100)
+    SetCamDofStrength(cam, dofStrength / 100)
     cb({})
+end)
+
+RegisterNUICallback('getLocales', function(_, cb)
+    cb({
+        fov = locale('ui.fov'),
+        roll = locale('ui.roll'),
+        dofStart = locale('ui.dofStart'),
+        dofEnd = locale('ui.dofEnd'),
+        dofStrength = locale('ui.dofStrength')
+    })
 end)

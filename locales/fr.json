@@ -1,19 +1,23 @@
 {
-    "help": {
-        "exit": "Eteindre l'appareil photo",
-        "take": "Prendre une photo"
+    "scaleform": {
+        "mouse": "Activer souris",
+        "ui": "Activer/Désactiver l'interface",
+        "quit": "Quitter",
+        "slower": "Ralentir",
+        "faster": "Accélérer",
+        "up": "Monter",
+        "down": "Descendre",
+        "forward": "Avancer",
+        "backward": "Reculer",
+        "left": "Gauche",
+        "right": "Droite"
     },
-    "input": {
-        "title": "Modifier la photo",
-        "photoTitle": "Titre de la photo",
-        "description": "Description"
+    "ui": {
+        "fov": "Champ de vision",
+        "roll": "Roulis",
+        "dofStart": "Profondeur de champ début",
+        "dofEnd": "Profondeur de champ fin",
+        "dofStrength": "Opacitée de la profondeur de champ"
     },
-    "error": {
-        "takePicture": "Impossible de prendre une photo",
-        "edit": "Impossible de modifier la photo"
-    },
-    "success": {
-        "edit": "Photo modifiée",
-        "copied": "URL copiée"
-    }
+    "open": "Ouvrir mode photo"
 }
