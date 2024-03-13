@@ -1,9 +1,10 @@
 local SendNUIMessage = SendNUIMessage
+local config = require 'config.client'
 
 local FOV_MAX = 79.5
 local FOV_MIN = 7.6
 local DEFAULT_FOV = (FOV_MAX + FOV_MIN) * 0.5
-local MAX_DISTANCE = 25.0
+local MAX_DISTANCE = config.maxDistance
 
 --- @type number
 local fov = DEFAULT_FOV
@@ -204,11 +205,8 @@ local function openCamera()
     SetCamRot(cam, 0.0, 0.0, heading, 2)
     SetCamFov(cam, fov)
     RenderScriptCams(true, false, 0, true, false)
-
-    toggleUI()
-
-    -- wtf does that do? needs testing
     SetCamUseShallowDofMode(cam, true)
+    toggleUI()
 
     local scaleform = lib.requestScaleformMovie("instructional_buttons", 10000)
     CreateThread(function()
@@ -286,7 +284,7 @@ end)
 lib.addKeybind({
     name = 'photomode',
     description = locale('open'),
-    defaultKey = 'F5',
+    defaultKey = config.openKeybind,
     onPressed = function()
         if inCam then
             resetCamera()
