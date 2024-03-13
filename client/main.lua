@@ -26,10 +26,36 @@ local showControls = false
 local cam
 local inCam = false
 
-local function helpText()
-    SetTextComponentFormat("STRING")
-    AddTextComponentString(locale('help.exit')..': ~INPUT_CELLPHONE_CANCEL~\n'..locale('help.take')..': ~INPUT_CELLPHONE_SELECT~')
-    DisplayHelpTextFromStringLabel(0, false, true, 1)
+local function inputScaleform(scaleform)
+    PushScaleformMovieFunction(scaleform, "CLEAR_ALL")
+    PopScaleformMovieFunctionVoid()
+
+    local scaleformButtons = {
+        {'~INPUT_AIM~', locale('scaleform.mouse')},
+        {'~INPUT_VEH_HEADLIGHT~', locale('scaleform.ui')},
+        {'~INPUT_FRONTEND_CANCEL~', locale('scaleform.quit')},
+        {'~INPUT_FRONTEND_RS~', locale('scaleform.slower')},
+        {'~INPUT_SPRINT~', locale('scaleform.faster')},
+        {'~INPUT_PICKUP~', locale('scaleform.up')},
+        {'~INPUT_COVER~', locale('scaleform.down')},
+        {'~INPUT_MOVE_UP_ONLY~', locale('scaleform.forward')},
+        {'~INPUT_MOVE_DOWN_ONLY~', locale('scaleform.backward')},
+        {'~INPUT_MOVE_LEFT_ONLY~', locale('scaleform.left')},
+        {'~INPUT_MOVE_RIGHT_ONLY~', locale('scaleform.right')}
+    }
+
+    for i = 1, #scaleformButtons, 1 do
+        PushScaleformMovieFunction(scaleform, "SET_DATA_SLOT")
+        PushScaleformMovieFunctionParameterInt(i - 1)
+        PushScaleformMovieFunctionParameterString(scaleformButtons[i][1])
+        PushScaleformMovieFunctionParameterString(scaleformButtons[i][2])
+        PopScaleformMovieFunctionVoid()
+    end
+
+    PushScaleformMovieFunction(scaleform, "DRAW_INSTRUCTIONAL_BUTTONS")
+    PushScaleformMovieFunctionParameterInt(0)
+    PopScaleformMovieFunctionVoid()
+    DrawScaleformMovieFullscreen(scaleform, 255, 255, 255, 255, 0)
 end
 
 local function resetVariables()
@@ -182,18 +208,22 @@ local function openCamera()
     toggleUI()
 
     -- wtf does that do? needs testing
-    SetCamUseShallowDofMode(cam, false)
+    SetCamUseShallowDofMode(cam, true)
 
+    local scaleform = lib.requestScaleformMovie("instructional_buttons", 10000)
     CreateThread(function()
         while inCam do
             disableKeyboard()
-            helpText()
             if not disabledControls then
                 handleMouseControls()
                 handleKeyboardControls()
             end
+            if showControls then
+                inputScaleform(scaleform)
+            end
 
             SetUseHiDof()
+            SetCamDofFocalLengthMultiplier(cam, 2.5)
 
             if IsDisabledControlJustPressed(1, 202) then
                 inCam = false
@@ -253,6 +283,6 @@ end)
 
 RegisterNUICallback('onDofStrengthChange', function(data, cb)
     dofStrength = tonumber(data.dofStrength)
-    SetCamDofStrength(cam, dofStrength)
+    SetCamDofStrength(cam, dofStrength/100)
     cb({})
 end)
