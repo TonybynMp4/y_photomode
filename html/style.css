@@ -3,11 +3,6 @@
 	src: url("Oxygen-Regular.ttf");
 }
 
-@font-face {
-	font-family: 'Oxygen-Bold';
-	src: url(Oxygen-Bold.ttf);
-}
-
 body {
 	margin: 0;
 	padding: 0;
@@ -27,7 +22,6 @@ body {
     border-radius: 2em;
     font-family: 'Oxygen';
     font-size: 1em;
-    font-weight: bold;
 }
 
 #controls-container div {
