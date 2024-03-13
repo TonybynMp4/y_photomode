@@ -17,11 +17,10 @@ body {
 #controls-container {
     display: none;
     position: absolute;
-    bottom: 1em;
+    bottom: 4em;
     right: 1em;
     background-color: rgba(0, 0, 0, 0.5);
     color: white;
-    display: flex;
     flex-direction: column;
     align-items: flex-start;
     padding: 2em;
