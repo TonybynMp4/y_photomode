@@ -238,20 +238,6 @@ local function openCamera()
     end)
 end
 
-lib.addKeybind({
-    name = 'photomode',
-    description = locale('open'),
-    defaultKey = 'F5',
-    onPressed = function()
-        if inCam then
-            resetCamera()
-            return
-        end
-
-        openCamera()
-    end
-})
-
 RegisterNUICallback('onClose', function(_, cb)
     resetCamera()
     cb({})
@@ -269,7 +255,7 @@ RegisterNUICallback('onRollChange', function(data, cb)
     cb({})
 end)
 
-RegisterNUICallback('onDofChange', function(data, cb)
+RegisterNUICallback('onDofStartChange', function(data, cb)
     dof = tonumber(data.dofStart)
     SetCamNearDof(cam, dof)
     cb({})
@@ -296,3 +282,17 @@ RegisterNUICallback('getLocales', function(_, cb)
         dofStrength = locale('ui.dofStrength')
     })
 end)
+
+lib.addKeybind({
+    name = 'photomode',
+    description = locale('open'),
+    defaultKey = 'F5',
+    onPressed = function()
+        if inCam then
+            resetCamera()
+            return
+        end
+
+        openCamera()
+    end
+})
