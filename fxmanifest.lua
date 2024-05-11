@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Tonybyn_Mp4'
 description 'Photo mode for the Qbox Framework'
-repository 'https://github.com/TonybynMp4/qbx_photomode'
+repository 'https://github.com/TonybynMp4/y_photomode'
 version '1.0.1'
 
 ox_lib 'locale'
