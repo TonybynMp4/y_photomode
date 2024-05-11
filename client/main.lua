@@ -82,6 +82,7 @@ local function resetCamera()
     DestroyCam(cam, false)
     cam = nil
     RenderScriptCams(false, true, 0, true, false)
+    TriggerEvent("qbx_hud:client:showHud")
     DisplayHud(true)
     DisplayRadar(true)
     ClearTimecycleModifier()
@@ -193,6 +194,7 @@ local function openCamera()
     SetNuiFocus(false, false)
     DisplayHud(false)
     DisplayRadar(false)
+    TriggerEvent("qbx_hud:client:hideHud")
     inCam = true
     SetTimecycleModifier("default")
 
