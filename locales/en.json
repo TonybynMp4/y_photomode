@@ -10,7 +10,8 @@
         "forward": "Forward",
         "backward": "Backward",
         "left": "Left",
-        "right": "Right"
+        "right": "Right",
+        "relative": "Relative Camera"
     },
     "ui": {
         "fov": "Field of View",

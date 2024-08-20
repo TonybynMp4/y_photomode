@@ -23,6 +23,7 @@ local dof = 0.0
 local dofEnd = 0.0
 local disabledControls = false
 local showControls = false
+local relativeCamCoords = false
 
 local cam
 local inCam = false
@@ -32,6 +33,7 @@ local function inputScaleform(scaleform)
     PopScaleformMovieFunctionVoid()
 
     local scaleformButtons = {
+        { '~INPUT_RELOAD~', locale('scaleform.relative') },
         { '~INPUT_AIM~',             locale('scaleform.mouse') },
         { '~INPUT_VEH_HEADLIGHT~',   locale('scaleform.ui') },
         { '~INPUT_FRONTEND_CANCEL~', locale('scaleform.quit') },
@@ -93,7 +95,7 @@ local function handleMouseControls()
     local multiplier = fov / 50
     heading -= (GetDisabledControlNormal(2, 1) * (5 * multiplier))
     pitch -= (GetDisabledControlNormal(2, 2) * (5 * multiplier))
-    ---@diagnostic disable-next-line: undefined-field
+
     pitch = math.clamp(pitch, -90.0, 90.0)
     SetCamRot(cam, pitch, roll, heading, 2)
 end
@@ -146,8 +148,21 @@ local function handleKeyboardControls()
         camCoords = GetCamCoord(cam)
     end
 
+    return vector3(moveForward, moveRight, moveUp)
+end
+
+local function updateCameraCoords(moveVector)
     local rightVector, forwardVector, upVector, position = GetCamMatrix(cam)
-    position += forwardVector * moveForward + rightVector * moveRight + upVector * moveUp
+    if moveVector then
+        position += forwardVector * moveVector.x + rightVector * moveVector.y + upVector * moveVector.z
+    end
+
+    -- follow the ped
+    if relativeCamCoords then
+        local newOrigin = GetEntityCoords(cache.ped)
+        position = newOrigin + (position - originCoords)
+        originCoords = newOrigin
+    end
 
     local distance = #(originCoords - position)
     if distance > MAX_DISTANCE then
@@ -159,8 +174,11 @@ local function handleKeyboardControls()
     SetCamCoord(cam, camCoords.x, camCoords.y, camCoords.z)
 end
 
-local function disableKeyboard()
+local function disableControlsThisFrame()
     DisableAllControlActions(0)
+    DisablePlayerFiring(cache.playerId, true)
+    DisableControlAction(0, 25, true)
+    DisableControlAction(0, 44, true)
 end
 
 local function disableControls()
@@ -212,25 +230,36 @@ local function openCamera()
 
     local scaleform = lib.requestScaleformMovie("instructional_buttons", 10000)
     CreateThread(function()
+        local moveVector
         while inCam do
-            disableKeyboard()
+            moveVector = nil
+            disableControlsThisFrame()
             if not disabledControls then
                 handleMouseControls()
-                handleKeyboardControls()
+                moveVector = handleKeyboardControls()
             end
             if showControls then
                 inputScaleform(scaleform)
             end
+            updateCameraCoords(moveVector)
 
             SetUseHiDof()
             SetCamDofFocalLengthMultiplier(cam, 2.5)
 
+            if IsDisabledControlJustPressed(1, 45) then
+                relativeCamCoords = not relativeCamCoords
+            end
+
             if IsDisabledControlJustPressed(1, 202) then
                 inCam = false
                 resetCamera()
-            elseif showControls and IsDisabledControlJustPressed(1, 25) then
+            end
+
+            if showControls and IsDisabledControlJustPressed(1, 25) then
                 disableControls()
-            elseif IsDisabledControlJustPressed(1, 74) then
+            end
+
+            if IsDisabledControlJustPressed(1, 74) then
                 toggleUI()
             end
             Wait(0)
@@ -244,31 +273,46 @@ RegisterNUICallback('onClose', function(_, cb)
 end)
 
 RegisterNUICallback('onFovChange', function(data, cb)
-    fov = tonumber(data.fov)
+    local NUIfov = tonumber(data.fov)
+    if not NUIfov then return end
+
+    fov = math.clamp(NUIfov, FOV_MIN, FOV_MAX)
     SetCamFov(cam, fov)
     cb({})
 end)
 
 RegisterNUICallback('onRollChange', function(data, cb)
-    roll = tonumber(data.roll)
+    local NUIroll = tonumber(data.roll)
+    if not NUIroll then return end
+
+    roll = NUIroll
     SetCamRot(cam, pitch, roll, heading, 2)
     cb({})
 end)
 
 RegisterNUICallback('onDofStartChange', function(data, cb)
-    dof = tonumber(data.dofStart)
+    local NUIdof = tonumber(data.dofStart)
+    if not NUIdof then return end
+
+    dof = NUIdof
     SetCamNearDof(cam, dof)
     cb({})
 end)
 
 RegisterNUICallback('onDofEndChange', function(data, cb)
-    dofEnd = tonumber(data.dofEnd)
+    local NUIdofEnd = tonumber(data.dofEnd)
+    if not NUIdofEnd then return end
+
+    dofEnd = NUIdofEnd
     SetCamFarDof(cam, dofEnd)
     cb({})
 end)
 
 RegisterNUICallback('onDofStrengthChange', function(data, cb)
-    dofStrength = tonumber(data.dofStrength)
+    local NUIdofStrength = tonumber(data.dofStrength)
+    if not NUIdofStrength then return end
+
+    dofStrength = NUIdofStrength
     SetCamDofStrength(cam, dofStrength / 100)
     cb({})
 end)

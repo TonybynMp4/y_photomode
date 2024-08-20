@@ -10,7 +10,8 @@
         "forward": "Avancer",
         "backward": "Reculer",
         "left": "Gauche",
-        "right": "Droite"
+        "right": "Droite",
+        "relative": "Caméra relative"
     },
     "ui": {
         "fov": "Champ de vision",
